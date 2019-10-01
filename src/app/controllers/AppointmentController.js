@@ -132,6 +132,12 @@ class AppointmentController {
         error: "You don't have permission to cancel this appointment.",
       });
     }
+
+    if (appointment.user_id !== req.userId) {
+      return res.status(401).json({
+        error: "You don't have permission to cancel this appointment.",
+      });
+    }
     const dateWithSub = subHours(appointment.date, 2);
 
     if (isBefore(dateWithSub, new Date())) {
@@ -143,9 +149,7 @@ class AppointmentController {
 
     await appointment.save();
 
-    await Queue.add(CancellationMail.key, {
-      appointment,
-    });
+    await Queue.add(CancellationMail.key, { appointment });
 
     return res.json(appointment);
   }
